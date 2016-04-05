@@ -79,7 +79,7 @@ void ofApp::resetAlgorithm()
     mIteration = 0;
     
     
-   // quantumSim.startSearchAlgorithm(searchSphere);
+    quantumSim.startSearchAlgorithm(searchSphere);
     
   
     

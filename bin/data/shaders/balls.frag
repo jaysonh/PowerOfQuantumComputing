@@ -1,82 +1,30 @@
 // Uniforms sent from main openframworks app
-uniform vec3 iResolution;       // Resolution of openframeworks app
-uniform float iGlobalTime;      // Time the app has been running for
-uniform vec4 iMouse;            // Mouse positiom
+uniform vec3  iResolution;              // Resolution of openframeworks app
+uniform float iGlobalTime;              // Time the app has been running for
+uniform vec4  iMouse;                   // Mouse positiom
 
-uniform sampler2D iChannel0;    // Texture #1
-uniform sampler2D iChannel1;    // Texture #2
-uniform sampler2D iChannel2;    // Texture #3
+uniform sampler2D iChannel0;            // Texture #1
+uniform sampler2D iChannel1;            // Texture #2
+uniform sampler2D iChannel2;            // Texture #3
     
-uniform int  iRandomSphere;     // Current sphere that we are searching for
+uniform int  iRandomSphere;             // Current sphere that we are searching for
 
-uniform float targetX;          // X position we want to move the camera to
-uniform float targetY;          // Y position we want to move the camera to
-uniform float targetZ;          // Z position we want to move the camera to
+uniform float targetX;                  // X position we want to move the camera to
+uniform float targetY;                  // Y position we want to move the camera to
+uniform float targetZ;                  // Z position we want to move the camera to
  
-uniform float rotationX;        // Camera rotation around X
-uniform float rotationY;        // Camera rotation around Y
+uniform float rotationX;                // Camera rotation around X
+uniform float rotationY;                // Camera rotation around Y
 
-#define GRID_SIZE 181           // Size of the grid we will draw (181 * 181 ) ~= 32768
+#define GRID_SIZE 181                   // Size of the grid we will draw (181 * 181 ) ~= 32768
 
+#define MAX_SCENE_DRAW_HEIGHT 50.0      // Y culling distance
 
-#define noise_use_smoothstep
+#define render_steps 256                // Amount of steps used in ray marching algorithm for drawing scene
 
-#define object_count 8
-#define object_speed_modifier 1.0
+#define PI 3.1415926535897932
 
-#define MAX_SCENE_DRAW_HEIGHT 50.0
-
-#define render_steps 256 
-
-// @appas  noise function from stackoverflow.xom
-float snoise(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
-mat2 makem2(in float theta){float c = cos(theta);float s = sin(theta);return mat2(c,-s,s,c);}
-float noise( in vec2 x ){return texture2D(iChannel0, x*.01).x;}
-
-mat2 m2 = mat2( 0.80,  0.60, -0.60,  0.80 );
-
-const float PI = 3.1415926535897932;
-const float speed = 0.2;
-const float speed_x = 0.3;
-const float speed_y = 0.3;
-
-const float emboss = 0.50;
-const float intensity = 2.4;
-const int steps = 8;
-const float frequency = 6.0;
-const int angle = 7;
-
-const float delta = 60.;
-const float intence = 700.;
-
-const float reflectionCutOff = 0.012;
-const float reflectionIntence = 200000.;
-
-
-
-float time = iGlobalTime*1.3;
-
-  float col(vec2 coord)
-  {
-    float delta_theta = 2.0 * PI / float(angle);
-    float col = 0.0;
-    float theta = 0.0;
-    for (int i = 0; i < steps; i++)
-    {
-      vec2 adjc = coord;
-      theta = delta_theta*float(i);
-      adjc.x += cos(theta)*time*speed + time * speed_x;
-      adjc.y -= sin(theta)*time*speed - time * speed_y;
-      col = col + cos( (adjc.x*cos(theta) - adjc.y*sin(theta))*frequency)*intensity;
-    }
-
-    return cos(col);
-  }
-
-
+// Rotate around the z axis
 vec3 rotate_z(vec3 v, float angle)
 {
     float ca = cos(angle); float sa = sin(angle);
@@ -86,30 +34,38 @@ vec3 rotate_z(vec3 v, float angle)
         +.0, +.0,+1.0);
 }
 
+// Rotate around the y axis
 vec3 rotate_y(vec3 v, float angle)
 {
-    float ca = cos(angle); float sa = sin(angle);
+    float ca = cos(angle); 
+    float sa = sin(angle);
+
     return v*mat3(
         +ca, +.0, -sa,
         +.0,+1.0, +.0,
         +sa, +.0, +ca);
 }
 
+// Rotate around the x axis
 vec3 rotate_x(vec3 v, float angle)
 {
-    float ca = cos(angle); float sa = sin(angle);
+    float ca = cos(angle); 
+    float sa = sin(angle);
+
     return v*mat3(
         +1.0, +.0, +.0,
         +.0, +ca, -sa,
         +.0, +sa, +ca);
 }
 
+// Rotate 2d vector around angle
 void rotate(inout vec2 v, const float angle)
 {
     float cs = cos(angle), ss = sin(angle);
     v = vec2(cs*v.x + ss*v.y, -ss*v.x + cs*v.y);
 }
 
+// Get sphere at position
 float spheres(vec3 p)
 {
     // Need to get indx here
@@ -126,12 +82,14 @@ float spheres(vec3 p)
     return length(p2)-1.0;  
 }
 
+// Get floor at position
 float flr(vec3 p)
 {
     return p.y+1.0;
 }
 
-float dist(vec3 p)//distance function
+//distance function
+float dist(vec3 p)
 {
     float t = iGlobalTime+4.0;
     float d = 1000.0;//p.y+2.0;
@@ -141,6 +99,7 @@ float dist(vec3 p)//distance function
     return d;
 }
 
+// Calculate ambient occlusion
 float amb_occ(vec3 p)
 {
     float acc=0.0;
@@ -157,27 +116,30 @@ float amb_occ(vec3 p)
     return 0.5+acc /(16.0*ambocce);
 }
 
-vec3 normal(vec3 p,float e) //returns the normal, uses the distance function
+//returns the normal, uses the distance function
+vec3 normal(vec3 p,float e) 
 {
     float d=dist(p);
     return normalize(vec3(dist(p+vec3(e,0,0))-d,dist(p+vec3(0,e,0))-d,dist(p+vec3(0,0,e))-d));
 }
 
-vec3 background(vec3 p,vec3 d)//render background
+// render background
+vec3 background(vec3 p,vec3 d)
 {
-    //d=rotate_z(d,-1.0);
+    // Make a shade between blue and yellow
     vec3 color = mix(vec3(.9,.6,.2),vec3(.1,.4,.8),d.y*.5+.5);
    
     return color*(.5+.5*texture2D(iChannel2,d.xz*.01).xyz)*.75;
     
 }
 
-vec3 object_material(vec3 p, vec3 d, out float alpha) //computes the material for the object
+//computes the material for the object
+vec3 object_material(vec3 p, vec3 d, out float alpha) 
 {
-    vec3 n = normal(p,.02); //normal vector
-    vec3 r = reflect(d,n); //reflect vector
-    float ao = amb_occ(p); //fake ambient occlusion
-    vec3 color = vec3(.0,.0,.0); //variable to hold the color
+    vec3 n = normal(p,.02);             // normal vector
+    vec3 r = reflect(d,n);              // reflect vector
+    float ao = amb_occ(p);              // fake ambient occlusion
+    vec3 color = vec3(.0,.0,.0);        // variable to hold the color
     float reflectance = 1.0+dot(d,n);
     
     float or = 1.0;
@@ -187,7 +149,7 @@ vec3 object_material(vec3 p, vec3 d, out float alpha) //computes the material fo
         float e = pow(1.4,fi);
         or = min(or,dist(p+r*e)/e);
     }
-    //or = or*.5+.5;
+
     or = max(or,.0);
     
     vec3 diffuse_acc = background(p,n)*ao;
@@ -213,31 +175,26 @@ vec3 object_material(vec3 p, vec3 d, out float alpha) //computes the material fo
     {
         float fi = float(i);
         
+        float od=1.0;
         
-
-        
-        float od=.0;
-        
-            od = 1.0;
-            for (int i=1; i<15; i++)
-            {
+        for (int i=1; i<15; i++)
+        {
                 float fi = float(i);
                 float e = fi*.5;
                 od = min(od,dist(p+ld*e)/e);
-            }
-           // od = od*.5+.5;
-            od = max(od,.0);
+        }
         
+        od = max(od,.0);
         
         vec3 icolor = vec3(2.0)*diffuse*od/(attenuation*.125);
         diffuse_acc += icolor;
     }
     
-    //return vec3(diffuse_acc*.5);
     alpha = 1.0;
-    offX1 = -2.0 + indxX * mult;
 
+    offX1 = -2.0 + indxX * mult;
     offZ1 = -2.0 + indxY * mult;
+
     if(spheres(p)<flr(p) )
     {
 
@@ -252,8 +209,10 @@ vec3 object_material(vec3 p, vec3 d, out float alpha) //computes the material fo
         
 
         color = vec3(0,0,0);
-        if(p.x > -362.0 && p.x < 362.0 &&
-           p.z > -362.0 && p.z < 362.0    )
+
+        // Check if sphere is inside the search space
+        if( p.x > -362.0 && p.x < 362.0 &&
+            p.z > -362.0 && p.z < 362.0    )
         {
                 
             tex = vec3(1.0, 0.0, 1.0);
@@ -292,7 +251,8 @@ void main(void)
     uv.x *= iResolution.x/iResolution.y; //fix aspect ratio
     vec3 mouse = vec3(iMouse.xy/iResolution.xy - 0.5,iMouse.z-.5);
     
-    float t = 0.0;//iGlobalTime*.5*object_speed_modifier + 30.0;
+    float t = 0.0;
+
     mouse += vec3(sin(t)*.05,sin(t)*.01,.0);
     
     float offs0=5.0;
