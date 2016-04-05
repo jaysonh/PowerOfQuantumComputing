@@ -1,33 +1,23 @@
-// Shadertoy uniforms
-uniform vec3 iResolution;
-uniform float iGlobalTime;
-uniform vec4 iMouse;
-uniform sampler2D iChannel0; // Texture #1
-uniform sampler2D iChannel1; // Texture #2
-uniform sampler2D iChannel2; // Texture #3
-uniform sampler2D iChannel3; // Texture #4
-uniform vec4 iDate;
-uniform int  iRandomSphere;
+// Uniforms sent from main openframworks app
+uniform vec3 iResolution;       // Resolution of openframeworks app
+uniform float iGlobalTime;      // Time the app has been running for
+uniform vec4 iMouse;            // Mouse positiom
 
-uniform float targetX;
-uniform float targetY;
-uniform float targetZ;
+uniform sampler2D iChannel0;    // Texture #1
+uniform sampler2D iChannel1;    // Texture #2
+uniform sampler2D iChannel2;    // Texture #3
+    
+uniform int  iRandomSphere;     // Current sphere that we are searching for
 
-uniform int textureWidth;
-uniform int textureHeight;
+uniform float targetX;          // X position we want to move the camera to
+uniform float targetY;          // Y position we want to move the camera to
+uniform float targetZ;          // Z position we want to move the camera to
+ 
+uniform float rotationX;        // Camera rotation around X
+uniform float rotationY;        // Camera rotation around Y
 
-uniform vec3  sphereOffset;
-uniform float minX;
-uniform float maxX;
+#define GRID_SIZE 181           // Size of the grid we will draw (181 * 181 ) ~= 32768
 
-uniform float rotationY;
-uniform float rotationX;
-
-#define GRID_SIZE 181
-
-#define occlusion_enabled
-#define occlusion_pass1_quality 40
-#define occlusion_pass2_quality 8
 
 #define noise_use_smoothstep
 

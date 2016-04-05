@@ -79,7 +79,7 @@ void ofApp::resetAlgorithm()
     mIteration = 0;
     
     
-    quantumSim.startSearchAlgorithm(searchSphere);
+   // quantumSim.startSearchAlgorithm(searchSphere);
     
   
     
@@ -112,13 +112,7 @@ void ofApp::draw(){
         for(int i = 0; i < (ofGetFrameNum()/30)%5; i++)
             spaces += ".";
         font.drawString("preparing quantum simulator" + spaces, 180, 450);
-        
-        /*if(ofGetElapsedTimef() - lastTime > 4.0)
-        {
-            loading = false;
-            lastTime = ofGetElapsedTimef();
-        }*/
-    }else
+           }else
     {
         if(intro)
         {
@@ -202,11 +196,6 @@ void ofApp::draw(){
         shaderFbo.draw(0,-ofGetHeight());
         ofPopMatrix();
     }
-  
-
-    ofImage img;
-    img.grabScreen(0,0,ofGetWidth(),ofGetHeight());
-    img.save(ofToString(ofGetFrameNum()) + ".jpg");
 }
 
 //--------------------------------------------------------------
