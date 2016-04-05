@@ -134,7 +134,7 @@ vec3 background(vec3 p,vec3 d)
 }
 
 //computes the material for the object
-vec3 object_material(vec3 p, vec3 d, out float alpha) 
+vec3 object_material(vec3 p, vec3 d) 
 {
     vec3 n = normal(p,.02);             // normal vector
     vec3 r = reflect(d,n);              // reflect vector
@@ -190,7 +190,6 @@ vec3 object_material(vec3 p, vec3 d, out float alpha)
         diffuse_acc += icolor;
     }
     
-    alpha = 1.0;
 
     offX1 = -2.0 + indxX * mult;
     offZ1 = -2.0 + indxY * mult;
@@ -233,55 +232,48 @@ vec3 object_material(vec3 p, vec3 d, out float alpha)
     }else{
         // floor colour
 
-        // Grid 
+        // Grid from texture image
         vec3 tex = texture2D(iChannel1,mod(p, vec3(1.0)).xz).xyz ;
         color = tex*diffuse_acc+background(p,r)*(.1+or*reflectance)*1.5;
     }
 
-    
     return color*min(ao*1.9,1.0)*.8;
-    //return color;
 }
 
 
-
+// Main function
 void main(void)
 {
+    // Convert coordinates
     vec2 uv = gl_FragCoord.xy / iResolution.xy - 0.5;
-    uv.x *= iResolution.x/iResolution.y; //fix aspect ratio
+    
+    // Fix aspect ratio
+    uv.x *= iResolution.x / iResolution.y; 
+    
+    // Convert mouse position
     vec3 mouse = vec3(iMouse.xy/iResolution.xy - 0.5,iMouse.z-.5);
     
-    float t = 0.0;
+    // Setup the camera position
+    vec3 p = vec3(targetX, targetY, targetZ);
 
-    mouse += vec3(sin(t)*.05,sin(t)*.01,.0);
-    
-    float offs0=5.0;
-    float offs1=1.0;
-    
-    
-
-    //setup the camera
-    vec3 p = vec3(0,0.0,-1.0);
-    p = rotate_x(p,rotationX);
-
-
-    p.x = targetX;
-    p.z = targetZ;
-    p.y = targetY;
-
-
+    // Setup the camera direction
     vec3 d = vec3(uv,1.0);
-    d.z -= length(d)*0.3;//0.6; //lens distort
+
+    //lens distort
+    d.z -= length(d)*0.3; 
     d = normalize(d);
 
+    // Rotate camera around x and y axis
     d = rotate_x(d,mouse.y* 4.0 *PI);
     d = rotate_y(d,rotationY);
     p.y += 3.5;
 
     
     vec3 sp = p;
-    vec3 color;
     float dd,td;
+
+    // Final pixel colour
+    vec3 pixelColour;
     
     //raymarcing 
     for (int i=0; i<render_steps; i++)
@@ -292,21 +284,23 @@ void main(void)
         if (dd> MAX_SCENE_DRAW_HEIGHT ) break;
     }
     
-    float alpha = 1.0;
+    // If pixel ray hit sphere or ground
     if (dd<0.1)
     {
-        color = object_material(p,d,alpha);
+        pixelColour = object_material(p,d);
 
     }
+    // Otherwise set colour to background
     else
     {
-        color = background(p,d);
+        pixelColour = background(p,d);
     }
     
-    color = mix(background(p,d),color,1.0/(td*.03+1.0));
-    color = (color-vec3(.01,.01,.01))* vec3(3.0,3.5,3.5);
-    
-    color *= (1.0-length(uv)*0.5);
+    // adjust lighting and blending
+    pixelColour = mix(background(p,d),pixelColour,1.0/(td*.03+1.0));
+    pixelColour = (pixelColour-vec3(.01,.01,.01))* vec3(3.0,3.5,3.5);
+    pixelColour *= (1.0-length(uv)*0.5);
 
-    gl_FragColor = vec4(color.xyz,1.0);//vec4(pow(color,vec3(1.0/2.2)),alpha);
+    // Finally set pixel colour
+    gl_FragColor = vec4(pixelColour.xyz,1.0);
 }

@@ -79,7 +79,7 @@ void ofApp::resetAlgorithm()
     mIteration = 0;
     
     
-    quantumSim.startSearchAlgorithm(searchSphere);
+    //quantumSim.startSearchAlgorithm(searchSphere);
     
   
     
@@ -94,7 +94,7 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
     
-   // printf("mouse: %i %i\n", ofGetMouseX(), ofGetMouseY());
+    // Calculate distance to target
     ofVec3f diff = ofVec3f( targetX - cameraPos.x,
                             targetY - cameraPos.y,
                             targetZ - cameraPos.z);
